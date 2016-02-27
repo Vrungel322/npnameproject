@@ -29,7 +29,7 @@ public class NNPApplication extends Application implements BootstrapNotifier {
             "2f234454-cf6d-4a0f-adf2-f5011ba9ffa6"
     };
 
-    private RegionBootstrap regionBootstrap;
+    public RegionBootstrap regionBootstrap;
 
     @Override
     public void onCreate() {

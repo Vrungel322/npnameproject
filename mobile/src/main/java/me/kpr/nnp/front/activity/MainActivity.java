@@ -1,9 +1,12 @@
 package me.kpr.nnp.front.activity;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.view.View;
+import android.support.v7.app.AlertDialog;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -12,19 +15,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-
-import org.altbeacon.beacon.Beacon;
-import org.altbeacon.beacon.BeaconParser;
-import org.altbeacon.beacon.BeaconTransmitter;
-
-import java.util.Arrays;
+import android.widget.Toast;
 
 import me.kpr.nnp.R;
+import me.kpr.nnp.back.callback.OnMessageReceivedCallback;
+import me.kpr.nnp.back.nfc.NFCHelper;
+import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements
+        NavigationView.OnNavigationItemSelectedListener {
 
     public static final String EXTRA_BEACON_UUID = "beaconUUID";
+    private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
+    private NFCHelper helper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,35 +37,50 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        fab.setOnClickListener(view ->
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+                        .setAction("Action", null).show());
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
+        drawer.addDrawerListener(toggle);
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-//        Beacon beacon = new Beacon.Builder()
-//                .setId1("2f234454-cf6d-4a0f-adf2-f4911ba9ffa6")
-//                .setId2("1")
-//                .setId3("2")
-//                .setManufacturer(0x0118)
-//                .setTxPower(-59)
-//                .setDataFields(Arrays.asList(new Long[] {0l}))
-//                .build();
-//        BeaconParser beaconParser = new BeaconParser()
-//                .setBeaconLayout("m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25");
-//        BeaconTransmitter beaconTransmitter = new BeaconTransmitter(getApplicationContext(), beaconParser);
-//        beaconTransmitter.startAdvertising(beacon);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) !=
+                    PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                        PERMISSION_REQUEST_COARSE_LOCATION);
+            }
+        }
+
+        // NFC stuff
+        helper = new NFCHelper();
+        helper.setMessage("LALALALLAL");
+        helper.init(this);
+        helper.setCallback(new OnMessageReceivedCallback() {
+            @Override
+            public void onReceive(String message) {
+                Timber.e("SUCCESS : " + message);
+                Toast.makeText(getApplicationContext(), "Message: " + message,
+                        Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure() {
+                Toast.makeText(getApplicationContext(), "FAILURE", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        helper.onResume(getIntent());
     }
 
     @Override
@@ -120,5 +138,25 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[],
+                                           int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUEST_COARSE_LOCATION: {
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Timber.e("coarse location permission granted");
+                } else {
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setTitle("Functionality limited");
+                    builder.setMessage(getString(R.string.ungranted));
+                    builder.setPositiveButton(android.R.string.ok, null);
+                    builder.setOnDismissListener(dialog -> {
+                    });
+                    builder.show();
+                }
+            }
+        }
     }
 }
