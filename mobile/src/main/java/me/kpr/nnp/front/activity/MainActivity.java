@@ -20,9 +20,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import java.util.List;
+
 import me.kpr.nnp.R;
 import me.kpr.nnp.back.callback.OnMessageReceivedCallback;
 import me.kpr.nnp.back.nfc.NFCHelper;
+import me.kpr.nnp.back.web_core.SyncManager;
+import me.kpr.nnp.back.web_core.models.Product;
 import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity implements
@@ -38,6 +42,8 @@ public class MainActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        test();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(view ->
@@ -90,6 +96,25 @@ public class MainActivity extends AppCompatActivity implements
                 Toast.makeText(getApplicationContext(), "FAILURE", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void test() {
+        SyncManager manager = SyncManager.getInstance(this);
+        manager.setListener(new SyncManager.OnLoadCompleteListener() {
+            @Override
+            public void onLoadComplete(List<Product> products) {
+                for (Product product : products) {
+                    Timber.d(product.getName());
+                }
+            }
+
+            @Override
+            public void onLoadError() {
+                Toast.makeText(MainActivity.this, "Load error", Toast.LENGTH_SHORT).show();
+            }
+        });
+        manager.loadProducts(119041L, 10, 0);
+
     }
 
     @Override
