@@ -32,7 +32,7 @@ public class NFCReceiver {
 
     public void onResume(Intent intent) {
         String action = intent.getAction();
-        if (action.equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
+        if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
             Parcelable[] parcelables =
                     intent.getParcelableArrayExtra(
                             NfcAdapter.EXTRA_NDEF_MESSAGES);

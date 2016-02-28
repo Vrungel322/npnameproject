@@ -1,6 +1,7 @@
 package me.kpr.nnp.front.activity;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.nfc.NfcAdapter;
 import android.os.Build;
@@ -18,13 +19,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
 
 import java.util.List;
 
+import jp.wasabeef.glide.transformations.CropCircleTransformation;
 import me.kpr.nnp.R;
 import me.kpr.nnp.back.callback.OnMessageReceivedCallback;
 import me.kpr.nnp.back.nfc.NFCHelper;
+import me.kpr.nnp.back.utils.SharedPrefUtils;
 import me.kpr.nnp.back.web_core.SyncManager;
 import me.kpr.nnp.back.web_core.models.Product;
 import timber.log.Timber;
@@ -39,6 +47,14 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (!SharedPrefUtils.getInstance(this).isLoginned()) {
+            Intent intent = new Intent(this,FirstLaunchActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
+        }
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -59,6 +75,16 @@ public class MainActivity extends AppCompatActivity implements
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        if (SharedPrefUtils.getInstance(this).isLoginned()) {
+            View view = navigationView.getHeaderView(0);
+            ImageView imageView = (ImageView) view.findViewById(R.id.imageView);
+            TextView textView = (TextView) view.findViewById(R.id.name);
+
+            Glide.with(this).load(SharedPrefUtils.getInstance(this).getPhoto())
+                    .bitmapTransform(new CropCircleTransformation(this))
+                    .into(imageView);
+            textView.setText(SharedPrefUtils.getInstance(this).getName());
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) !=
                     PackageManager.PERMISSION_GRANTED) {

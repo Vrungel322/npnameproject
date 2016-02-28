@@ -14,6 +14,8 @@ import org.altbeacon.beacon.startup.RegionBootstrap;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.kpr.nnp.back.api.FbAuthHandler;
+import me.kpr.nnp.back.utils.SharedPrefUtils;
 import me.kpr.nnp.front.activity.MainActivity;
 import timber.log.Timber;
 
@@ -33,9 +35,11 @@ public class NNPApplication extends Application implements BootstrapNotifier {
     @Override
     public void onCreate() {
         super.onCreate();
-        ActiveAndroid.initialize(this);
 
+        ActiveAndroid.initialize(this);
         Timber.plant(new Timber.DebugTree());
+        FbAuthHandler.initialize(this);
+        SharedPrefUtils.init(this);
 
         if (android.os.Build.VERSION.SDK_INT < 18) {
             Timber.e("requires Android 4.3");
