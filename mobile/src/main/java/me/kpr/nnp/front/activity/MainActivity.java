@@ -2,8 +2,11 @@ package me.kpr.nnp.front.activity;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.nfc.NfcAdapter;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
@@ -62,6 +65,18 @@ public class MainActivity extends AppCompatActivity implements
         helper = new NFCHelper();
         helper.setMessage("LALALALLAL");
         helper.init(this);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            helper.setListener((a, i) -> {
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.post(() -> {
+                    if (i == NfcAdapter.STATE_ON) {
+                        // set smth
+                    } else {
+                        // set smth
+                    }
+                });
+            });
+        }
         helper.setCallback(new OnMessageReceivedCallback() {
             @Override
             public void onReceive(String message) {

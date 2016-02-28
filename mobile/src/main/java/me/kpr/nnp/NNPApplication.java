@@ -11,7 +11,6 @@ import org.altbeacon.beacon.Region;
 import org.altbeacon.beacon.startup.BootstrapNotifier;
 import org.altbeacon.beacon.startup.RegionBootstrap;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
